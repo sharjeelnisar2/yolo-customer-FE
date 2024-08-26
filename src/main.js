@@ -4,9 +4,19 @@ import router from './router';
 
 import { createApp } from 'vue'
 import App from './App.vue'
+import { keycloak, initKeycloak } from './keycloak/keycloak';
 
-const app = createApp(App);
+initKeycloak.then(() => {
+    const app = createApp(App);
 
-app.use(router);
+    app.config.globalProperties.$keycloak = keycloak;
+    app.config.globalProperties.$logout = () => {
+        keycloak.logout();
+    };
 
-app.mount('#app');
+    app.use(router);
+
+    app.mount('#app');
+}).catch(error => {
+    console.error('Keycloak initialization failed:', error);
+});
