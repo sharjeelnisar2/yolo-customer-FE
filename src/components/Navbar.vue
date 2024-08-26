@@ -54,7 +54,7 @@ onBeforeUnmount(() => {
         <i class="pi pi-user text-gray-600 text-xl md:text-2xl user-button"></i>
         <div v-if="dropdownOpen" class="absolute right-0 mt-2 w-48 bg-white border rounded shadow-md popup-menu">
           <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Profile</a>
-          <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Logout</a>
+          <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100" @click.prevent="$logout">Logout</a>
         </div>
       </button>
     </div>

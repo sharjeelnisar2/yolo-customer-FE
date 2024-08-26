@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "http-proxy-middleware": "^3.0.0",
+    "keycloak-js": "^25.0.4",
     "primeicons": "^7.0.0",
     "vue": "^3.4.37",
     "vue-router": "^4.4.3"
