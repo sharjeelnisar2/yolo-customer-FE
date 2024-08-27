@@ -21,7 +21,7 @@ async function fetchOrders() {
       throw new Error('Network response was not ok');
     }
     const data = await response.json();
-    orderData.value.orders = data.data.orders; // Ensure this maps correctly to 'orders'
+    orderData.value.orders = data.data.orders;
   } catch (error) {
     console.error('Failed to fetch orders:', error);
   }
@@ -35,8 +35,7 @@ async function fetchOrderItems(orderId) {
       throw new Error('Failed to fetch order items');
     }
     const data = await response.json();
-    // Map the order items correctly from the response
-    selectedOrder.value.order_items = data.data.orderItems; // Use 'data.orderItems' from the response
+    selectedOrder.value.order_items = data.data.orderItems;
   } catch (error) {
     console.error('Failed to fetch order items:', error);
   }
@@ -84,72 +83,88 @@ onMounted(() => {
     <div class="mb-4 flex space-x-4">
       <button @click="setStatusFilter('')"
         :class="selectedStatus === '' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'"
-        class="px-4 py-2 rounded-lg focus:outline-none">
-        All
-      </button>
+        class="px-4 py-2 rounded-lg focus:outline-none">All</button>
       <button @click="setStatusFilter('1')"
         :class="selectedStatus === '1' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'"
-        class="px-4 py-2 rounded-lg focus:outline-none">
-        {{ orderStatusEnum[1] }}
-      </button>
+        class="px-4 py-2 rounded-lg focus:outline-none">{{ orderStatusEnum[1] }}</button>
       <button @click="setStatusFilter('2')"
         :class="selectedStatus === '2' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'"
-        class="px-4 py-2 rounded-lg focus:outline-none">
-        {{ orderStatusEnum[2] }}
-      </button>
+        class="px-4 py-2 rounded-lg focus:outline-none">{{ orderStatusEnum[2] }}</button>
       <button @click="setStatusFilter('3')"
         :class="selectedStatus === '3' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'"
-        class="px-4 py-2 rounded-lg focus:outline-none">
-        {{ orderStatusEnum[3] }}
-      </button>
+        class="px-4 py-2 rounded-lg focus:outline-none">{{ orderStatusEnum[3] }}</button>
     </div>
 
-    <main class="flex-1 p-4">
-      <!-- Order List -->
-      <div class="space-y-4">
-        <div v-for="order in filteredOrders" :key="order.id"
-          class="bg-white shadow rounded-lg mb-4 p-4 flex justify-between items-center">
-          <div class="flex-grow">
-            <div class="flex justify-between">
-              <h2 class="text-lg font-semibold">Order #{{ order.code }}</h2>
-              <span class="text-sm text-gray-600">Placed on: {{ new Date(order.createdAt).toLocaleDateString() }}</span>
-            </div>
-            <div class="flex space-x-4 mt-2">
-              <p><strong>Amount:</strong> {{ order.price }}</p>
-              <p><strong>Status:</strong> {{ orderStatusEnum[order.orderStatusId] }}</p>
-              <p><strong>User ID:</strong> {{ order.userId }}</p>
-            </div>
-          </div>
-          <button @click="showOrderDetails(order)"
-            class="ml-4 px-4 py-2 bg-blue-500 text-white rounded">Details</button>
-        </div>
+    <!-- Order List with Headers -->
+    <div class="bg-white shadow rounded-lg">
+      <div class="grid grid-cols-5 gap-4 bg-gray-100 p-4 text-gray-700 font-semibold">
+        <div>Order Code</div>
+        <div>Amount</div>
+        <div>Status</div>
+        <div>User ID</div>
+        <div></div> <!-- Empty header for the Details button -->
       </div>
-    </main>
+      <div v-for="order in filteredOrders" :key="order.id" class="grid grid-cols-5 gap-4 p-4 border-b">
+        <div>{{ order.code }}</div>
+        <div>{{ order.price }}</div>
+        <div>{{ orderStatusEnum[order.orderStatusId] }}</div>
+        <div>{{ order.userId }}</div>
+        <div class="text-right"><button @click="showOrderDetails(order)"
+            class="px-4 py-2 bg-blue-500 text-white rounded">Details</button></div>
+      </div>
+    </div>
 
     <!-- Modal for Order Details -->
     <div v-if="showModal" class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-      <div class="bg-white rounded-lg shadow-lg p-4 w-11/12 md:w-1/3">
-        <h3 class="text-xl font-semibold mb-2">Order Details</h3>
-        <div>
-          <p><strong>Order Code:</strong> {{ selectedOrder.code }}</p>
-          <p><strong>Amount:</strong> {{ selectedOrder.price }}</p>
-          <p><strong>Status:</strong> {{ orderStatusEnum[selectedOrder.orderStatusId] }}</p>
-          <p><strong>User ID:</strong> {{ selectedOrder.userId }}</p>
-          <h4 class="font-semibold mt-2">Order Items:</h4>
+      <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl">
+        <div class="flex justify-between items-center border-b pb-4">
+          <h3 class="text-xl font-semibold">Order# {{ selectedOrder.code }}</h3>
+          <button @click="closeModal" class="text-gray-600 hover:text-black">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="mt-4 grid grid-cols-2 gap-4">
+          <!-- Order Information -->
+          <div>
+            <p><strong>Amount:</strong> {{ selectedOrder.price }}</p>
+            <p><strong>User ID:</strong> {{ selectedOrder.userId }}</p>
+            <p><strong>Order Date:</strong> {{ new Date(selectedOrder.createdAt).toLocaleDateString() }}</p>
+          </div>
+          <!-- Shipping Information -->
+          <div>
+            <p><strong>Status:</strong> {{ orderStatusEnum[selectedOrder.orderStatusId] }}</p>
+            <p><strong>Delivery Address:</strong> {{ selectedOrder.paymentMethod }}</p>
+            <p><strong>Delivery Date:</strong> {{ new Date(selectedOrder.updatedAt).toLocaleDateString() }}</p>
+          </div>
+        </div>
+
+        <!-- Order Items -->
+        <h4 class="font-semibold mt-6">Order Items</h4>
+        <div class="border-t mt-2 pt-2">
           <ul>
-            <li v-for="item in selectedOrder.order_items" :key="item.id" class="border-b py-2">
-              <p><strong>Recipe ID:</strong> {{ item.recipeId }}</p>
-              <p><strong>Quantity:</strong> {{ item.quantity }}</p>
+            <li v-for="item in selectedOrder.order_items" :key="item.id"
+              class="flex justify-between items-center py-2 border-b">
+              <div>
+                <p><strong>Recipe ID:</strong> {{ item.recipeId }}</p>
+                <p><strong>Quantity:</strong> {{ item.quantity }}</p>
+              </div>
               <p><strong>Added on:</strong> {{ new Date(item.createdAt).toLocaleDateString() }}</p>
             </li>
           </ul>
         </div>
-        <button @click="closeModal" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded">Close</button>
+
+        <div class="flex justify-end mt-4">
+          <button @click="closeModal" class="px-4 py-2 bg-blue-500 text-white rounded">Close</button>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <style>
-
+/* Add custom styles if needed */
 </style>
