@@ -62,13 +62,30 @@ const generateAIResponse = async () => {
   }
 };
 
-const saveAsDraft = () => {
-  console.log("Saved as draft:", {
-    title: title.value,
-    description: description.value,
+const saveAsDraft = async () => {
+//   console.log("Saved as draft:", {
+//     title: chat.response.title,
+//     description:  chat.response.description,
+//     interests: interests.value,
+//     restrictions: restrictions.value,
+//   });
+  const requestBody = {
+    title: title,
+    description:  description,
     interests: interests.value,
     restrictions: restrictions.value,
-  });
+  };
+
+    const response = await axios.post(
+      "http://localhost:8081/users/ideas/draft/1",
+      requestBody,
+      {
+        headers: {
+        //   Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 };
 
 const submitIdea = () => {
