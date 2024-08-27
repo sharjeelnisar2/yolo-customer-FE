@@ -1,6 +1,8 @@
 <script setup>
 import { ref } from "vue";
-import AIGeneratorModal from "./AIGeneratorModal.vue";
+import axios from "axios";
+
+const emit = defineEmits(["close"]);
 
 const title = ref("");
 const description = ref("");
@@ -15,10 +17,49 @@ const restrictions = ref({
   restriction3: "",
 });
 
-const showAIPopup = ref(false);
+const aiPrompt = ref("");
+const aiResponse = ref(null);
+const chatHistory = ref([]);
 
 const toggleAIPopup = () => {
-  showAIPopup.value = !showAIPopup.value;
+  emit("close");
+};
+
+const generateAIResponse = async () => {
+  try {
+    const authToken = localStorage.getItem("authToken");
+    const prompt = aiPrompt.value;
+    console.log(interests.value)
+    console.log(restrictions.value)
+    const requestBody = {
+      message: prompt,
+      interests: interests.value,
+      restrictions: restrictions.value,
+    };
+
+    const response = await axios.post(
+      "http://localhost:8081/ai/generate",
+      requestBody,
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const generatedIdea = response.data.idea;
+
+    chatHistory.value.push({
+      prompt: aiPrompt.value,
+      response: generatedIdea,
+    });
+
+    aiResponse.value = generatedIdea;
+    aiPrompt.value = "";
+  } catch (error) {
+    console.error("Error generating AI response:", error);
+  }
 };
 
 const saveAsDraft = () => {
@@ -41,43 +82,56 @@ const submitIdea = () => {
 </script>
 
 <template>
-  <div class="w-full mx-auto p-6">
-    <h2 class="text-2xl font-bold mb-10">Generate Idea</h2>
+  <div
+    class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50"
+  >
+    <div class="bg-white rounded-lg p-6 shadow-lg w-lg md:max-w-5xl relative">
+      <button
+        @click="toggleAIPopup"
+        class="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+      >
+        ✕
+      </button>
 
-    <form @submit.prevent="submitIdea">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <h3 class="text-xl font-bold text-center mb-4">AI Idea Generator</h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <!-- Title Field -->
-          <div class="mb-4">
-            <label for="title" class="block text-gray-700 font-medium mb-2">
-              Title
-            </label>
-            <input
-              v-model="title"
-              id="title"
-              type="text"
-              placeholder="Enter a title"
-              class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-300"
-              required
-            />
+          <!-- Chat History -->
+          <div class="h-80 overflow-y-auto bg-gray-100 p-4 rounded-lg mb-4">
+            <div v-for="(chat, index) in chatHistory" :key="index" class="mb-4">
+              <p class="text-gray-600">
+                <strong>User:</strong> {{ chat.prompt }}
+              </p>
+              <p class="text-gray-800">
+                <strong>AI:</strong> {{ chat.response.title }} -
+                {{ chat.response.description }}
+              </p>
+            </div>
           </div>
 
-          <!-- Description Field -->
+          <!-- Prompt Input -->
           <div class="mb-4">
-            <label for="description" class="block text-gray-700 font-medium mb-2">
-              Description
+            <label for="aiPrompt" class="block text-gray-700 font-medium mb-2">
+              Enter your AI prompt:
             </label>
-            <textarea
-              v-model="description"
-              id="description"
-              rows="4"
-              placeholder="Enter a description"
-              class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-300"
-              required
-            ></textarea>
+            <div class="flex gap-3">
+              <input
+                v-model="aiPrompt"
+                id="aiPrompt"
+                type="text"
+                placeholder="Describe your idea"
+                class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-300"
+              />
+              <button
+                @click="generateAIResponse"
+                class="p-3 w-12 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              >
+                <i class="pi pi-arrow-up-right"></i>
+              </button>
+            </div>
           </div>
         </div>
-
         <div>
           <div>
             <h3 class="text-gray-700 font-medium mb-3">Interests</h3>
@@ -128,8 +182,8 @@ const submitIdea = () => {
         </div>
       </div>
 
-      <!-- Button Group -->
-      <div class="flex justify-between">
+      <div class="mt-6 flex justify-between">
+
         <div>
           <button
             type="button"
@@ -146,18 +200,17 @@ const submitIdea = () => {
             Submit
           </button>
         </div>
-
         <button
-          type="button"
           @click="toggleAIPopup"
-          class="px-4 py-2 border border-gray-700 text-gray-700 font-medium rounded-lg shadow hover:bg-green-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-green-300"
+          class="px-4 py-2 border border-gray-700 text-gray-700 font-medium rounded-lg shadow hover:bg-gray-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-gray-300"
         >
-          Try AI
+          Close
         </button>
       </div>
-    </form>
-
-    <!-- AI Generator Modal -->
-    <AIGeneratorModal v-if="showAIPopup" @close="toggleAIPopup" />
+    </div>
   </div>
 </template>
+
+<style scoped>
+/* Optional styles for the modal */
+</style>
