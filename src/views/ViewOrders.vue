@@ -155,7 +155,7 @@ onMounted(() => {
         <div class="border-t mt-2 pt-2">
           <div class="grid grid-cols-7 gap-4 bg-gray-100 p-4 text-gray-700 font-semibold">
             <div>Recipe</div>
-            <div>Recipe ID</div>
+            <div>Recipe code</div>
             <div>Description</div>
             <div>Quantity</div>
             <div>Price</div>
@@ -167,7 +167,7 @@ onMounted(() => {
               class="flex justify-between items-center border-b py-4">
               <div class="grid grid-cols-7 gap-4 p-4">
                 <div>{{ item.recipe.name }}</div>
-                <div>{{ item.recipe.id }}</div>
+                <div>{{ item.recipe.code }}</div>
                 <div>{{ item.recipe.description }}</div>
                 <div>{{ item.orderItem.quantity }}</div>
                 <div>{{ item.recipe.price }} USD</div>
