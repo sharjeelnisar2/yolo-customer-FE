@@ -138,14 +138,12 @@ onMounted(() => {
         <div class="mt-4 grid grid-cols-2 gap-4">
           <!-- Order Information -->
           <div class="border p-4 rounded-lg shadow-sm">
-            <h4 class="font-semibold mb-2">Order Information</h4>
             <p><strong>Amount:</strong> {{ selectedOrder.price }} USD</p>
             <p><strong>User ID:</strong> {{ selectedOrder.userId }}</p>
             <p><strong>Order Date:</strong> {{ new Date(selectedOrder.createdAt).toLocaleDateString() }}</p>
           </div>
           <!-- Shipping Information -->
           <div class="border p-4 rounded-lg shadow-sm">
-            <h4 class="font-semibold mb-2">Shipping Information</h4>
             <p><strong>Status:</strong> {{ orderStatusEnum[selectedOrder.orderStatusId] }}</p>
             <p><strong>Delivery Address:</strong> {{ selectedOrder.paymentMethod }}</p>
             <p><strong>Delivery Date:</strong> {{ new Date(selectedOrder.updatedAt).toLocaleDateString() }}</p>
