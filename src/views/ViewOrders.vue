@@ -9,7 +9,7 @@ const selectedOrder = ref({});
 // Enum mapping for order statuses
 const orderStatusEnum = {
   1: 'Placed',
-  2: 'In Process',
+  2: 'Processing',
   3: 'Dispatched',
 };
 
