@@ -80,19 +80,27 @@ onMounted(() => {
     <h1 class="text-2xl font-bold mb-4">Order History</h1>
 
     <!-- Filter Options -->
-    <div class="mb-4 flex space-x-4">
-      <button @click="setStatusFilter('')"
-        :class="selectedStatus === '' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'"
-        class="px-4 py-2 rounded-lg focus:outline-none">All</button>
-      <button @click="setStatusFilter('1')"
-        :class="selectedStatus === '1' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'"
-        class="px-4 py-2 rounded-lg focus:outline-none">{{ orderStatusEnum[1] }}</button>
-      <button @click="setStatusFilter('2')"
-        :class="selectedStatus === '2' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'"
-        class="px-4 py-2 rounded-lg focus:outline-none">{{ orderStatusEnum[2] }}</button>
-      <button @click="setStatusFilter('3')"
-        :class="selectedStatus === '3' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'"
-        class="px-4 py-2 rounded-lg focus:outline-none">{{ orderStatusEnum[3] }}</button>
+    <div class="mb-4 flex justify-end space-x-4">
+      <button @click="setStatusFilter('1')" 
+              :class="selectedStatus === '1' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'" 
+              class="px-4 py-2 rounded-lg focus:outline-none w-32 text-center">
+        {{ orderStatusEnum[1] }}
+      </button>
+      <button @click="setStatusFilter('2')" 
+              :class="selectedStatus === '2' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'" 
+              class="px-4 py-2 rounded-lg focus:outline-none w-32 text-center">
+        {{ orderStatusEnum[2] }}
+      </button>
+      <button @click="setStatusFilter('3')" 
+              :class="selectedStatus === '3' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'" 
+              class="px-4 py-2 rounded-lg focus:outline-none w-32 text-center">
+        {{ orderStatusEnum[3] }}
+      </button>
+      <button @click="setStatusFilter('')" 
+              :class="selectedStatus === '' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'" 
+              class="px-4 py-2 rounded-lg focus:outline-none w-32 text-center">
+        All
+      </button>
     </div>
 
     <!-- Order List with Headers -->
