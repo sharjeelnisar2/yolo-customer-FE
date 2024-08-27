@@ -21,7 +21,7 @@ const router = createRouter({
 let isProfileCompleted = true;
 
 router.beforeEach((to, from, next) => {
-  console.log("Hereeeee");
+  
   if (!isProfileCompleted && to.name !== 'Profile') {
     next({ name: 'Profile' });
   } else {
