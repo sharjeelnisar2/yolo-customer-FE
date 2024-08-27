@@ -81,24 +81,24 @@ onMounted(() => {
 
     <!-- Filter Options -->
     <div class="mb-4 flex justify-end space-x-4">
-      <button @click="setStatusFilter('1')" 
-              :class="selectedStatus === '1' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'" 
-              class="px-4 py-2 rounded-lg focus:outline-none w-32 text-center">
+      <button @click="setStatusFilter('1')"
+        :class="selectedStatus === '1' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'"
+        class="px-4 py-2 rounded-lg focus:outline-none w-32 text-center">
         {{ orderStatusEnum[1] }}
       </button>
-      <button @click="setStatusFilter('2')" 
-              :class="selectedStatus === '2' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'" 
-              class="px-4 py-2 rounded-lg focus:outline-none w-32 text-center">
+      <button @click="setStatusFilter('2')"
+        :class="selectedStatus === '2' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'"
+        class="px-4 py-2 rounded-lg focus:outline-none w-32 text-center">
         {{ orderStatusEnum[2] }}
       </button>
-      <button @click="setStatusFilter('3')" 
-              :class="selectedStatus === '3' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'" 
-              class="px-4 py-2 rounded-lg focus:outline-none w-32 text-center">
+      <button @click="setStatusFilter('3')"
+        :class="selectedStatus === '3' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'"
+        class="px-4 py-2 rounded-lg focus:outline-none w-32 text-center">
         {{ orderStatusEnum[3] }}
       </button>
-      <button @click="setStatusFilter('')" 
-              :class="selectedStatus === '' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'" 
-              class="px-4 py-2 rounded-lg focus:outline-none w-32 text-center">
+      <button @click="setStatusFilter('')"
+        :class="selectedStatus === '' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'"
+        class="px-4 py-2 rounded-lg focus:outline-none w-32 text-center">
         All
       </button>
     </div>
@@ -137,13 +137,15 @@ onMounted(() => {
 
         <div class="mt-4 grid grid-cols-2 gap-4">
           <!-- Order Information -->
-          <div>
-            <p><strong>Amount:</strong> {{ selectedOrder.price }}</p>
+          <div class="border p-4 rounded-lg shadow-sm">
+            <h4 class="font-semibold mb-2">Order Information</h4>
+            <p><strong>Amount:</strong> {{ selectedOrder.price }} USD</p>
             <p><strong>User ID:</strong> {{ selectedOrder.userId }}</p>
             <p><strong>Order Date:</strong> {{ new Date(selectedOrder.createdAt).toLocaleDateString() }}</p>
           </div>
           <!-- Shipping Information -->
-          <div>
+          <div class="border p-4 rounded-lg shadow-sm">
+            <h4 class="font-semibold mb-2">Shipping Information</h4>
             <p><strong>Status:</strong> {{ orderStatusEnum[selectedOrder.orderStatusId] }}</p>
             <p><strong>Delivery Address:</strong> {{ selectedOrder.paymentMethod }}</p>
             <p><strong>Delivery Date:</strong> {{ new Date(selectedOrder.updatedAt).toLocaleDateString() }}</p>
@@ -153,23 +155,37 @@ onMounted(() => {
         <!-- Order Items -->
         <h4 class="font-semibold mt-6">Order Items</h4>
         <div class="border-t mt-2 pt-2">
-          <ul>
-            <li v-for="item in selectedOrder.order_items" :key="item.id"
-              class="flex justify-between items-center py-2 border-b">
-              <div>
-                <p><strong>Recipe ID:</strong> {{ item.recipeId }}</p>
-                <p><strong>Quantity:</strong> {{ item.quantity }}</p>
+          <div class="grid grid-cols-7 gap-4 bg-gray-100 p-4 text-gray-700 font-semibold">
+            <div>Recipe</div>
+            <div>Recipe ID</div>
+            <div>Description</div>
+            <div>Quantity</div>
+            <div>Price</div>
+            <div>Serving Size</div>
+            <div>Created At</div>
+          </div>
+          <ul class="space-y-4">
+            <li v-for="item in selectedOrder.order_items" :key="item.orderItem.id"
+              class="flex justify-between items-center border-b py-4">
+              <div class="grid grid-cols-7 gap-4 p-4">
+                <div>{{ item.recipe.name }}</div>
+                <div>{{ item.recipe.id }}</div>
+                <div>{{ item.recipe.description }}</div>
+                <div>{{ item.orderItem.quantity }}</div>
+                <div>{{ item.recipe.price }} USD</div>
+                <div>{{ item.recipe.servingSize }}</div>
+                <div> {{ new Date(item.orderItem.createdAt).toLocaleDateString() }}</div>
               </div>
-              <p><strong>Added on:</strong> {{ new Date(item.createdAt).toLocaleDateString() }}</p>
             </li>
           </ul>
         </div>
 
         <div class="flex justify-end mt-4">
-          <button @click="closeModal" class="px-4 py-2 bg-blue-500 text-white rounded">Close</button>
+          <button @click="closeModal" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Close</button>
         </div>
       </div>
     </div>
+
   </div>
 </template>
 
