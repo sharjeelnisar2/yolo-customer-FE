@@ -6,17 +6,8 @@ const emit = defineEmits(["close"]);
 
 const title = ref("");
 const description = ref("");
-const interests = ref({
-  interest1: "",
-  interest2: "",
-  interest3: "",
-});
-const restrictions = ref({
-  restriction1: "",
-  restriction2: "",
-  restriction3: "",
-});
-
+const interests = ref(["", "", ""]);
+const restrictions = ref(["", "", ""]); 
 const aiPrompt = ref("");
 const aiResponse = ref(null);
 const chatHistory = ref([]);
@@ -29,12 +20,10 @@ const generateAIResponse = async () => {
   try {
     const authToken = localStorage.getItem("authToken");
     const prompt = aiPrompt.value;
-    console.log(interests.value)
-    console.log(restrictions.value)
     const requestBody = {
       message: prompt,
       interests: interests.value,
-      restrictions: restrictions.value,
+      dietaryRestrictions: restrictions.value,
     };
 
     const response = await axios.post(
@@ -63,37 +52,34 @@ const generateAIResponse = async () => {
 };
 
 const saveAsDraft = async () => {
-//   console.log("Saved as draft:", {
-//     title: chat.response.title,
-//     description:  chat.response.description,
-//     interests: interests.value,
-//     restrictions: restrictions.value,
-//   });
+  const authToken = localStorage.getItem("vue-token");
   const requestBody = {
-    title: title,
-    description:  description,
+    title: aiResponse.value.title,
+    description:  aiResponse.value.description,
     interests: interests.value,
-    restrictions: restrictions.value,
+    dietaryRestrictions: restrictions.value,
   };
 
     const response = await axios.post(
-      "http://localhost:8081/users/ideas/draft/1",
+      "http://localhost:8081/users/ideas/draft",
       requestBody,
       {
         headers: {
-        //   Authorization: `Bearer ${authToken}`,
+          Authorization: `Bearer ${authToken}`,
           "Content-Type": "application/json",
         },
       }
     );
+    toggleAIPopup();
 };
 
+//Ahmad
 const submitIdea = () => {
   console.log("Idea submitted:", {
     title: title.value,
     description: description.value,
     interests: interests.value,
-    restrictions: restrictions.value,
+    dietaryRestrictions: restrictions.value,
   });
 };
 </script>
@@ -153,44 +139,43 @@ const submitIdea = () => {
           <div>
             <h3 class="text-gray-700 font-medium mb-3">Interests</h3>
             <input
-              v-model="interests.interest1"
+              v-model="interests[0]"
               class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-300 mb-2"
               placeholder="Interest 1"
               type="text"
             />
             <input
-              v-model="interests.interest2"
+              v-model="interests[1]"
               class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-300 mb-2"
               placeholder="Interest 2"
               type="text"
             />
             <input
-              v-model="interests.interest3"
+              v-model="interests[2]"
               class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-300 mb-2"
               placeholder="Interest 3"
               type="text"
             />
           </div>
 
-          <!-- Dietary Restrictions -->
           <div>
             <h3 class="text-gray-700 font-medium mt-8 mb-3">
               Dietary Restrictions
             </h3>
             <input
-              v-model="restrictions.restriction1"
+              v-model="restrictions[0]"
               class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-300 mb-2"
               placeholder="Dietary Restriction 1"
               type="text"
             />
             <input
-              v-model="restrictions.restriction2"
+              v-model="restrictions[1]"
               class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-300 mb-2"
               placeholder="Dietary Restriction 2"
               type="text"
             />
             <input
-              v-model="restrictions.restriction3"
+              v-model="restrictions[2]"
               class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-300 mb-2"
               placeholder="Dietary Restriction 3"
               type="text"
@@ -227,7 +212,3 @@ const submitIdea = () => {
     </div>
   </div>
 </template>
-
-<style scoped>
-/* Optional styles for the modal */
-</style>
