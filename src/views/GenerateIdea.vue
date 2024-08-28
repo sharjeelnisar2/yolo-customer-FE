@@ -6,12 +6,45 @@ import AIGeneratorModal from "./AIGeneratorModal.vue";
 const title = ref("");
 const description = ref("");
 const interests = ref(["", "", ""]);
-const restrictions = ref(["", "", ""]); 
+const restrictions = ref(["", "", ""]);
 
 const showAIPopup = ref(false);
 
 const toggleAIPopup = () => {
   showAIPopup.value = !showAIPopup.value;
+};
+
+const generateAIResponse = async () => {
+  try {
+    const authToken = localStorage.getItem("vue-token");
+    const requestBody = {
+      interests: interests.value,
+      dietaryRestrictions: restrictions.value,
+    };
+
+    const response = await axios.post(
+      "http://localhost:8081/ai/generate",
+      requestBody,
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const generatedIdea = response.data.idea;
+
+    chatHistory.value.push({
+      prompt: aiPrompt.value,
+      response: generatedIdea,
+    });
+
+    aiResponse.value = generatedIdea;
+    aiPrompt.value = "";
+  } catch (error) {
+    console.error("Error generating AI response:", error);
+  }
 };
 
 const saveAsDraft = async () => {
@@ -23,16 +56,16 @@ const saveAsDraft = async () => {
     dietaryRestrictions: restrictions.value,
   };
 
-    const response = await axios.post(
-      "http://localhost:8081/users/ideas/draft",
-      requestBody,
-      {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+  const response = await axios.post(
+    "http://localhost:8081/users/ideas/draft",
+    requestBody,
+    {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
 };
 
 //Ahmad
@@ -52,36 +85,47 @@ const submitIdea = () => {
 
     <form @submit.prevent="submitIdea">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div>
-          <!-- Title Field -->
-          <div class="mb-4">
-            <label for="title" class="block text-gray-700 font-medium mb-2">
-              Title
-            </label>
-            <input
-              v-model="title"
-              id="title"
-              type="text"
-              placeholder="Enter a title"
-              class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-300"
-              required
-            />
+        <div class="flex justify-between gap-6">
+          <div class="flex">
+            <div>
+              <div class="mb-4">
+                <label for="title" class="block text-gray-700 font-medium mb-2">
+                  Title
+                </label>
+                <input
+                  v-model="title"
+                  id="title"
+                  type="text"
+                  placeholder="Enter a title"
+                  class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-300"
+                  required
+                />
+              </div>
+              <div class="mb-4">
+                <label
+                  for="description"
+                  class="block text-gray-700 font-medium mb-2"
+                >
+                  Description
+                </label>
+                <textarea
+                  v-model="description"
+                  id="description"
+                  rows="4"
+                  placeholder="Enter a description"
+                  class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-300"
+                  required
+                ></textarea>
+              </div>
+            </div>
           </div>
-
-          <!-- Description Field -->
-          <div class="mb-4">
-            <label for="description" class="block text-gray-700 font-medium mb-2">
-              Description
-            </label>
-            <textarea
-              v-model="description"
-              id="description"
-              rows="4"
-              placeholder="Enter a description"
-              class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-300"
-              required
-            ></textarea>
-          </div>
+          <button
+          type="button"
+          @click="generateAIResponse"
+          class="h-10 px-4 py-2 border border-gray-700 text-gray-700 font-medium rounded-lg shadow hover:bg-green-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-green-300"
+        >
+          AI
+        </button>
         </div>
 
         <div>
