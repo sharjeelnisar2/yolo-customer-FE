@@ -1,6 +1,9 @@
 <script setup>
 import { ref, computed } from "vue";
 import axios from "axios";
+import { roles } from '../data/roles.js'; 
+
+const baseUrl = import.meta.env.VITE_API_BASE_URL
 
 const title = ref("");
 const description = ref("");
@@ -16,9 +19,6 @@ const areInterestsValid = computed(() => interests.value.every(i => i.length <= 
 const areRestrictionsValid = computed(() => restrictions.value.every(r => r.length <= 32));
 const isInterestEntered = computed(() => interests.value.some(i => i.trim() !== ""));
 
-const toggleAIPopup = () => {
-  showAIPopup.value = !showAIPopup.value;
-};
 
 const validateInputs = () => {
   if (!isTitleValid.value) {
@@ -56,7 +56,7 @@ const generateAIResponse = async () => {
     };
 
     const response = await axios.post(
-      "http://localhost:8081/ai/generate",
+      `${baseUrl}/ai/generate`,
       requestBody,
       {
         headers: {
