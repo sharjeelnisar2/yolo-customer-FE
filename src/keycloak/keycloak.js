@@ -1,9 +1,11 @@
 import Keycloak from 'keycloak-js';
 
+import { KEYCLOAK_CONFIG } from '../config';
+
 const keycloak = new Keycloak({
-    url: 'http://localhost:8080',
-    realm: import.meta.env.VITE_KEYCLOAK_REALM,
-    clientId: import.meta.env.VITE_KEYCLOAK_CLIENT_ID,
+    url: KEYCLOAK_CONFIG.url,
+    realm: KEYCLOAK_CONFIG.realm,
+    clientId: KEYCLOAK_CONFIG.clientId,
 });
 
 const initKeycloak = new Promise((resolve, reject) => {
