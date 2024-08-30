@@ -1,7 +1,7 @@
 <template>
     <div>
-      <h1>Profile Page hereeeeeeeeee</h1>
-      <!-- Content for Profile -->
+      <h1>Profile Page </h1>
+  
     </div>
   </template>
   
