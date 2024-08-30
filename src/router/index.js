@@ -18,15 +18,5 @@ const router = createRouter({
   routes,
 });
 
-let isProfileCompleted = true;
-
-router.beforeEach((to, from, next) => {
-  
-  if (!isProfileCompleted && to.name !== 'Profile') {
-    next({ name: 'Profile' });
-  } else {
-    next();
-  }
-});
 
 export default router;
