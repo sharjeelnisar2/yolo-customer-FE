@@ -2,7 +2,6 @@
 import { ref, computed } from "vue";
 import axios from "axios";
 
-// Reactive state
 const title = ref("");
 const description = ref("");
 const interests = ref(["", "", ""]);
@@ -11,7 +10,6 @@ const restrictions = ref(["", "", ""]);
 const showAIPopup = ref(false);
 const userId = ref(parseInt(localStorage.getItem("user-id")));
 
-// Computed properties for validation
 const isTitleValid = computed(() => title.value.length <= 64);
 const isDescriptionValid = computed(() => description.value.length <= 128);
 const areInterestsValid = computed(() => interests.value.every(i => i.length <= 32));
@@ -22,7 +20,6 @@ const toggleAIPopup = () => {
   showAIPopup.value = !showAIPopup.value;
 };
 
-// Validation function
 const validateInputs = () => {
   if (!isTitleValid.value) {
     alert("Title length must be 64 characters or less.");
@@ -189,7 +186,6 @@ const submitIdea = () => {
             />
           </div>
 
-          <!-- Dietary Restrictions -->
           <div>
             <h3 class="text-gray-700 font-medium mt-8 mb-3">
               Dietary Restrictions
@@ -234,8 +230,5 @@ const submitIdea = () => {
 
       </div>
     </form>
-
-    <!-- AI Generator Modal -->
-    <AIGeneratorModal v-if="showAIPopup" @close="toggleAIPopup" />
   </div>
 </template>
