@@ -1,10 +1,16 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import axios from 'axios';
+import { roles } from '../data/roles.js'; // Import the predefined roles
 
 const orderData = ref({ orders: [] });
 const selectedStatus = ref('');
 const showModal = ref(false);
 const selectedOrder = ref({});
+const userDetails = ref({});
+const userRoles = ref([]);
+const hasAccess = ref(false); // Reactive property to control access
+
 
 // Enum mapping for order statuses
 const orderStatusEnum = {
@@ -13,15 +19,54 @@ const orderStatusEnum = {
   3: 'Dispatched',
 };
 
+// Get user details from local storage
+const storedUserDetails = localStorage.getItem('user-details');
+if (storedUserDetails) {
+  userDetails.value = JSON.parse(storedUserDetails);
+  userRoles.value = userDetails.value.roles || []; // Set userRoles based on userDetails
+} else {
+  console.warn('No user details found in local storage.');
+}
+
+// Function to check if user has a specific role
+function hasRole(role) {
+  return userRoles.value.includes(role);
+}
+
+// Check if the user has the required role
+function checkAccess() {
+  if (hasRole(roles.VIEW_ORDER_HISTORY)) {
+    hasAccess.value = true; // User has access
+    fetchOrders(); // Fetch orders only if access is granted
+  } else {
+    // Redirect to unauthorized page or display a message
+    window.location.href = '/error'; // Example redirect
+  }
+}
+
+// Get the token from localStorage
+const token = localStorage.getItem('vue-token');
+
+// Watch for changes in localStorage and update the token
+window.addEventListener('storage', (event) => {
+  if (event.key === 'vue-token') {
+    token.value = event.newValue;
+  }
+});
+
+// Axios instance with authorization header
+const axiosInstance = axios.create({
+  baseURL: 'http://localhost:8081',
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
+});
+
 // Fetch order data from the API
 async function fetchOrders() {
   try {
-    const response = await fetch('http://localhost:8081/users/orders');
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-    const data = await response.json();
-    orderData.value.orders = data.data.orders;
+    const response = await axiosInstance.get('/users/orders');
+    orderData.value.orders = response.data.data.orders;
   } catch (error) {
     console.error('Failed to fetch orders:', error);
   }
@@ -30,12 +75,8 @@ async function fetchOrders() {
 // Fetch order items from the API when an order is clicked
 async function fetchOrderItems(orderId) {
   try {
-    const response = await fetch(`http://localhost:8081/users/orders/${orderId}/orderitems`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch order items');
-    }
-    const data = await response.json();
-    selectedOrder.value.order_items = data.data.orderItems;
+    const response = await axiosInstance.get(`/users/orders/${orderId}/orderitems`);
+    selectedOrder.value.order_items = response.data.data.orderItems;
   } catch (error) {
     console.error('Failed to fetch order items:', error);
   }
@@ -69,11 +110,12 @@ function closeModal() {
   selectedOrder.value = {};
 }
 
-// Fetch orders on component mount
+// Check access when component mounts
 onMounted(() => {
-  fetchOrders();
+  checkAccess();
 });
 </script>
+
 
 <template>
   <div class="container mx-auto p-4">
