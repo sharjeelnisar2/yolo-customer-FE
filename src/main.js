@@ -20,7 +20,7 @@ initKeycloak.then(() => {
         }
     })
     .then(response => {
-        localStorage.setItem('user-details', response.data.user_details);
+        localStorage.setItem('user-details', JSON.stringify(response.data.user_details));
     
     })
     .catch(error => {
