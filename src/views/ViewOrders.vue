@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 import { roles } from '../data/roles.js'; // Import the predefined roles
+import { API_CONFIG } from '../config.js';
 
 const orderData = ref({ orders: [] });
 const selectedStatus = ref('');
@@ -9,60 +10,51 @@ const showModal = ref(false);
 const selectedOrder = ref({});
 const userDetails = ref({});
 const userRoles = ref([]);
-const hasAccess = ref(false); // Reactive property to control access
+const hasAccess = ref(false);
+const token = localStorage.getItem('vue-token');
 
-
-// Enum mapping for order statuses
 const orderStatusEnum = {
   1: 'Placed',
   2: 'Processing',
   3: 'Dispatched',
 };
 
-// Get user details from local storage
 const storedUserDetails = localStorage.getItem('user-details');
 if (storedUserDetails) {
   userDetails.value = JSON.parse(storedUserDetails);
-  userRoles.value = userDetails.value.roles || []; // Set userRoles based on userDetails
+  userRoles.value = userDetails.value.roles || [];
 } else {
   console.warn('No user details found in local storage.');
 }
 
-// Function to check if user has a specific role
 function hasRole(role) {
   return userRoles.value.includes(role);
 }
 
-// Check if the user has the required role
 function checkAccess() {
   if (hasRole(roles.VIEW_ORDER_HISTORY)) {
-    hasAccess.value = true; // User has access
-    fetchOrders(); // Fetch orders only if access is granted
+    hasAccess.value = true;
+    fetchOrders();
   } else {
-    // Redirect to unauthorized page or display a message
-    window.location.href = '/error'; // Example redirect
+
+    window.location.href = '/error';
   }
 }
 
-// Get the token from localStorage
-const token = localStorage.getItem('vue-token');
 
-// Watch for changes in localStorage and update the token
 window.addEventListener('storage', (event) => {
   if (event.key === 'vue-token') {
     token.value = event.newValue;
   }
 });
 
-// Axios instance with authorization header
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:8081',
+  baseURL: API_CONFIG.baseURL,
   headers: {
     Authorization: `Bearer ${token}`,
   },
 });
 
-// Fetch order data from the API
 async function fetchOrders() {
   try {
     const response = await axiosInstance.get('/users/orders');
@@ -72,7 +64,6 @@ async function fetchOrders() {
   }
 }
 
-// Fetch order items from the API when an order is clicked
 async function fetchOrderItems(orderId) {
   try {
     const response = await axiosInstance.get(`/users/orders/${orderId}/orderitems`);
@@ -82,7 +73,6 @@ async function fetchOrderItems(orderId) {
   }
 }
 
-// Filter orders based on selected status
 const filteredOrders = computed(() => {
   if (!selectedStatus.value) {
     return orderData.value.orders;
@@ -92,30 +82,25 @@ const filteredOrders = computed(() => {
   );
 });
 
-// Set selected status for filtering
 function setStatusFilter(status) {
   selectedStatus.value = status;
 }
 
-// Show order details in the modal and fetch order items
 function showOrderDetails(order) {
   selectedOrder.value = order;
   showModal.value = true;
   fetchOrderItems(order.id);
 }
 
-// Close the modal
 function closeModal() {
   showModal.value = false;
   selectedOrder.value = {};
 }
 
-// Check access when component mounts
 onMounted(() => {
   checkAccess();
 });
 </script>
-
 
 <template>
   <div class="container mx-auto p-4">
