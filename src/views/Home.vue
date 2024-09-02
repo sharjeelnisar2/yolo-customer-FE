@@ -1,13 +1,17 @@
 <template>
   <div>
     <h1>Home Page</h1>
-    <ProfileModal :isOpen="showProfileModal" @profile-completed="handleProfileCompleted" />
+    <ProfileModal
+      :isOpen="showProfileModal"
+      @profile-completed="handleProfileCompleted"
+    />
+   
   </div>
 </template>
 
 <script>
-import ProfileModal from './ProfileModal.vue';
-import axios from 'axios';
+import ProfileModal from "./ProfileModal.vue";
+import axios from "axios";
 
 export default {
   components: {
@@ -16,33 +20,40 @@ export default {
   data() {
     return {
       showProfileModal: false,
+      showUnallocatedRightsModal: false,
     };
   },
   mounted() {
-    this.checkUserProfile();
+    // Check user profile and roles when the component is mounted
+    this.checkUserProfileAndRoles();
   },
   methods: {
-    async checkUserProfile() {
+    async checkUserProfileAndRoles() {
       try {
-        const token = localStorage.getItem('vue-token'); // Example key, adjust as needed
+        const token = localStorage.getItem("vue-token");
 
-        // Make the API request with the Authorization header
-        const response = await axios.get('http://localhost:8081/users/profiles', {
-          headers: {
-            'Authorization': `Bearer ${token}`
+        // Fetch user profile completion status
+        const profileResponse = await axios.get(
+          "http://localhost:8081/users/profiles",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
-        });
-        if (response.data.is_user_profile_completed === false) {
+        );
+        if (profileResponse.data.is_user_profile_completed === false) {
           this.showProfileModal = true;
         }
+        
       } catch (error) {
-        console.error('Error checking user profile:', error);
+        console.error("Error checking user profile and roles:", error);
       }
     },
     handleProfileCompleted() {
       this.showProfileModal = false;
       // Additional logic if needed after profile is completed
-    }
-  }
+    },
+    
+  },
 };
 </script>
