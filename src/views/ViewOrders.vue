@@ -58,7 +58,7 @@ const axiosInstance = axios.create({
 async function fetchOrders() {
   try {
     const response = await axiosInstance.get('/users/orders');
-    orderData.value.orders = response.data.data.orders;
+    orderData.value.orders = response.data.orders;
   } catch (error) {
     console.error('Failed to fetch orders:', error);
   }
@@ -67,7 +67,7 @@ async function fetchOrders() {
 async function fetchOrderItems(orderId) {
   try {
     const response = await axiosInstance.get(`/users/orders/${orderId}/orderitems`);
-    selectedOrder.value.order_items = response.data.data.orderItems;
+    selectedOrder.value.order_items = response.data.orderItems;
   } catch (error) {
     console.error('Failed to fetch order items:', error);
   }
