@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from "vue";
 import axios from "axios";
+import { API_CONFIG } from "../config.js";
 import { roles } from '../data/roles.js'; 
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL
@@ -14,7 +15,7 @@ const showAIPopup = ref(false);
 const userId = ref(parseInt(localStorage.getItem("user-id")));
 
 const isTitleValid = computed(() => title.value.length <= 64);
-const isDescriptionValid = computed(() => description.value.length <= 128);
+const isDescriptionValid = computed(() => description.value.length <= 600);
 const areInterestsValid = computed(() => interests.value.every(i => i.length <= 32));
 const areRestrictionsValid = computed(() => restrictions.value.every(r => r.length <= 32));
 const isInterestEntered = computed(() => interests.value.some(i => i.trim() !== ""));
@@ -26,7 +27,7 @@ const validateInputs = () => {
     return false;
   }
   if (!isDescriptionValid.value) {
-    alert("Description length must be 128 characters or less.");
+    alert("Description length must be 180 characters or less.");
     return false;
   }
   if (!areInterestsValid.value) {
@@ -56,7 +57,7 @@ const generateAIResponse = async () => {
     };
 
     const response = await axios.post(
-      `${baseUrl}/ai/generate`,
+      `${API_CONFIG.baseURL}/ai/generate`,
       requestBody,
       {
         headers: {
@@ -88,7 +89,7 @@ const saveAsDraft = async () => {
 
   try {
     await axios.post(
-      "http://localhost:8081/users/ideas/create-draft",
+      `${API_CONFIG.baseURL}/users/ideas/create-draft`,
       requestBody,
       {
         headers: {
