@@ -1,62 +1,33 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import axios from "axios";
-import { roles } from '../data/roles.js'; 
 
-const baseUrl = import.meta.env.VITE_API_BASE_URL
+const emit = defineEmits(["close"]);
 
 const title = ref("");
 const description = ref("");
 const interests = ref(["", "", ""]);
-const restrictions = ref(["", "", ""]);
+const restrictions = ref(["", "", ""]); 
+const aiPrompt = ref("");
+const aiResponse = ref(null);
+const chatHistory = ref([]);
 
-const showAIPopup = ref(false);
-const userId = ref(parseInt(localStorage.getItem("user-id")));
-
-const isTitleValid = computed(() => title.value.length <= 64);
-const isDescriptionValid = computed(() => description.value.length <= 128);
-const areInterestsValid = computed(() => interests.value.every(i => i.length <= 32));
-const areRestrictionsValid = computed(() => restrictions.value.every(r => r.length <= 32));
-const isInterestEntered = computed(() => interests.value.some(i => i.trim() !== ""));
-
-
-const validateInputs = () => {
-  if (!isTitleValid.value) {
-    alert("Title length must be 64 characters or less.");
-    return false;
-  }
-  if (!isDescriptionValid.value) {
-    alert("Description length must be 128 characters or less.");
-    return false;
-  }
-  if (!areInterestsValid.value) {
-    alert("Each interest must be 32 characters or less.");
-    return false;
-  }
-  if (!areRestrictionsValid.value) {
-    alert("Each dietary restriction must be 32 characters or less.");
-    return false;
-  }
-  if (!isInterestEntered.value) {
-    alert("At least one interest must be entered.");
-    return false;
-  }
-  return true;
+const toggleAIPopup = () => {
+  emit("close");
 };
 
 const generateAIResponse = async () => {
-  if (!validateInputs()) return;
-
   try {
-    const authToken = localStorage.getItem("vue-token");
+    const authToken = localStorage.getItem("authToken");
+    const prompt = aiPrompt.value;
     const requestBody = {
-      userId: userId.value,
+      message: prompt,
       interests: interests.value,
       dietaryRestrictions: restrictions.value,
     };
 
     const response = await axios.post(
-      `${baseUrl}/ai/generate`,
+      "http://localhost:8081/ai/generate",
       requestBody,
       {
         headers: {
@@ -66,29 +37,31 @@ const generateAIResponse = async () => {
       }
     );
 
-    description.value = response.data.data.idea.description;
-    showAIPopup.value = true;
+    const generatedIdea = response.data.idea;
 
+    chatHistory.value.push({
+      prompt: aiPrompt.value,
+      response: generatedIdea,
+    });
+
+    aiResponse.value = generatedIdea;
+    aiPrompt.value = "";
   } catch (error) {
     console.error("Error generating AI response:", error);
   }
 };
 
 const saveAsDraft = async () => {
-  if (!validateInputs()) return;
-
   const authToken = localStorage.getItem("vue-token");
   const requestBody = {
-    title: title.value,
-    description: description.value,
+    title: aiResponse.value.title,
+    description:  aiResponse.value.description,
     interests: interests.value,
     dietaryRestrictions: restrictions.value,
-    userId: userId.value,
   };
 
-  try {
-    await axios.post(
-      "http://localhost:8081/users/ideas/create-draft",
+    const response = await axios.post(
+      "http://localhost:8081/users/ideas/draft",
       requestBody,
       {
         headers: {
@@ -97,72 +70,71 @@ const saveAsDraft = async () => {
         },
       }
     );
-    alert("Draft saved successfully.");
-  } catch (error) {
-    console.error("Error saving draft:", error);
-  }
+    toggleAIPopup();
 };
 
+//Ahmad
 const submitIdea = () => {
-  if (!validateInputs()) return;
-
   console.log("Idea submitted:", {
     title: title.value,
     description: description.value,
     interests: interests.value,
-    restrictions: restrictions.value,
+    dietaryRestrictions: restrictions.value,
   });
 };
 </script>
 
-
 <template>
-  <div class="w-full mx-auto p-6">
-    <h2 class="text-2xl font-bold mb-10">Generate Idea</h2>
+  <div
+    class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50"
+  >
+    <div class="bg-white rounded-lg p-6 shadow-lg w-lg md:max-w-5xl relative">
+      <button
+        @click="toggleAIPopup"
+        class="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+      >
+        ✕
+      </button>
 
-    <form @submit.prevent="submitIdea">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-8">
+      <h3 class="text-xl font-bold text-center mb-4">AI Idea Generator</h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <div class="mb-4">
-            <label for="title" class="block text-gray-700 font-medium mb-3">
-              Title
-            </label>
-            <input
-              v-model="title"
-              id="title"
-              type="text"
-              placeholder="Enter a title"
-              class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-300"
-              required
-            />
-          </div>
-          <div class="flex items-center gap-6 mb-4">
-            <div class="flex-1">
-              <label
-                for="description"
-                class="block text-gray-700 font-medium mb-2"
-              >
-                Description
-              </label>
-              <textarea
-                v-model="description"
-                id="description"
-                rows="4"
-                placeholder="Enter a description"
-                class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-300"
-                required
-              ></textarea>
+          <!-- Chat History -->
+          <div class="h-80 overflow-y-auto bg-gray-100 p-4 rounded-lg mb-4">
+            <div v-for="(chat, index) in chatHistory" :key="index" class="mb-4">
+              <p class="text-gray-600">
+                <strong>User:</strong> {{ chat.prompt }}
+              </p>
+              <p class="text-gray-800">
+                <strong>AI:</strong> {{ chat.response.title }} -
+                {{ chat.response.description }}
+              </p>
             </div>
-            <button
-              type="button"
-              @click="generateAIResponse"
-              class="h-10 px-4 py-2 border border-gray-700 text-gray-700 font-medium rounded-lg shadow hover:bg-green-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-green-300"
-            >
-              AI
-            </button>
+          </div>
+
+          <!-- Prompt Input -->
+          <div class="mb-4">
+            <label for="aiPrompt" class="block text-gray-700 font-medium mb-2">
+              Enter your AI prompt:
+            </label>
+            <div class="flex gap-3">
+              <input
+                v-model="aiPrompt"
+                id="aiPrompt"
+                type="text"
+                placeholder="Describe your idea"
+                class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-300"
+              />
+              <button
+                @click="generateAIResponse"
+                class="p-3 w-12 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              >
+                <i class="pi pi-arrow-up-right"></i>
+              </button>
+            </div>
           </div>
         </div>
-
         <div>
           <div>
             <h3 class="text-gray-700 font-medium mb-3">Interests</h3>
@@ -212,7 +184,9 @@ const submitIdea = () => {
         </div>
       </div>
 
-      <div class="flex justify-start">
+      <div class="mt-6 flex justify-between">
+
+        <div>
           <button
             type="button"
             @click="saveAsDraft"
@@ -227,8 +201,14 @@ const submitIdea = () => {
           >
             Submit
           </button>
-
+        </div>
+        <button
+          @click="toggleAIPopup"
+          class="px-4 py-2 border border-gray-700 text-gray-700 font-medium rounded-lg shadow hover:bg-gray-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-gray-300"
+        >
+          Close
+        </button>
       </div>
-    </form>
+    </div>
   </div>
 </template>
